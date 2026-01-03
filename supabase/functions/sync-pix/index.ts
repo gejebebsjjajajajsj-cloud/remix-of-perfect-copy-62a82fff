@@ -48,11 +48,13 @@ async function getAccessToken() {
 
 async function validateCompany(accessToken: string) {
   const response = await fetch(`${syncBaseUrl}/s1/getCompany`, {
-    method: "GET",
+    method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({}),
   });
 
   if (!response.ok) {
@@ -93,7 +95,7 @@ serve(async (req) => {
       phone: "5511999999999",
     };
 
-    const webhookUrl = body.webhook_url ?? `${Deno.env.get("VITE_SUPABASE_URL")}/functions/v1/sync-webhook`;
+    const webhookUrl = body.webhook_url ?? `${supabaseUrl}/functions/v1/sync-webhook`;
 
     const accessToken = await getAccessToken();
     await validateCompany(accessToken);
