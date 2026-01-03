@@ -32,6 +32,36 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          external_id: string
+          id: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          external_id: string
+          id?: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          external_id?: string
+          id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,6 +9,7 @@ const corsHeaders = {
 
 const triboPayApiKey = Deno.env.get("TRIBOPAY_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
 if (!triboPayApiKey) {
   console.error("TRIBOPAY_API_KEY não configurado nas variáveis de ambiente.");
@@ -16,6 +18,14 @@ if (!triboPayApiKey) {
 if (!supabaseUrl) {
   console.error("SUPABASE_URL não configurado nas variáveis de ambiente.");
 }
+
+if (!serviceRoleKey) {
+  console.error("SUPABASE_SERVICE_ROLE_KEY não configurado nas variáveis de ambiente.");
+}
+
+const supabase = supabaseUrl && serviceRoleKey
+  ? createClient(supabaseUrl, serviceRoleKey)
+  : null;
 
 // Gera a URL pública do webhook a partir do SUPABASE_URL
 function getWebhookUrl() {
@@ -50,7 +60,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, document, amount } = await req.json();
+    const { name, email, document, amount, type } = await req.json();
 
     // Validações mínimas exigidas pela TriboPay
     if (!name || !email || !document) {
@@ -73,9 +83,8 @@ serve(async (req) => {
       );
     }
 
-    const cleanCpf = document.replace(/\D/g, "");
-
     const amountInCents = Number.isInteger(amount) && amount > 0 ? amount : 2990; // fallback 29,90
+    const cleanCpf = document.replace(/\D/g, "");
 
     const externalId = `order_${Date.now()}`;
     const postbackUrl = getWebhookUrl();
@@ -120,8 +129,31 @@ serve(async (req) => {
       );
     }
 
-    // Esperamos que a TriboPay retorne campos compatíveis com data.pix.imageBase64 e data.pix.code
-    return new Response(JSON.stringify(data), {
+    if (!supabase) {
+      console.error("Supabase client não inicializado, não será possível salvar o pedido.");
+
+      return new Response(JSON.stringify({ ...data, externalId, orderId: null }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        external_id: externalId,
+        type: type || "subscription",
+        amount_cents: amountInCents,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (orderError) {
+      console.error("Erro ao salvar pedido no banco:", orderError);
+    }
+
+    return new Response(JSON.stringify({ ...data, externalId, orderId: order?.id ?? null }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

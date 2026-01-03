@@ -31,23 +31,51 @@ const Index = () => {
   const [pixQrBase64, setPixQrBase64] = useState<string | null>(null);
   const [pixCode, setPixCode] = useState<string | null>(null);
   const [pixError, setPixError] = useState<string | null>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
+  const [showWhatsappAccessModal, setShowWhatsappAccessModal] = useState(false);
 
   useEffect(() => {
     // Track page visit
     supabase.from("analytics_events").insert({ event_type: "visit" });
   }, []);
 
+  useEffect(() => {
+    if (!currentOrderId) return;
+
+    const channel = supabase
+      .channel("orders-status")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${currentOrderId}`,
+        },
+        (payload) => {
+          const newStatus = (payload.new as any).status;
+          if (newStatus === "paid") {
+            setShowWhatsappAccessModal(true);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentOrderId]);
+
   const trackEvent = (eventType: string) => {
     supabase.from("analytics_events").insert({ event_type: eventType });
   };
 
-  const handlePixCheckout = async (amountInCents: number) => {
+  const handlePixCheckout = async (amountInCents: number, type: "subscription" | "whatsapp") => {
     try {
       setPixError(null);
       setIsLoadingPix(true);
       setPixModalOpen(true);
 
-      // Dados de teste – você pode substituir por dados reais do cliente futuramente
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tribopay-create-pix`,
         {
@@ -60,6 +88,7 @@ const Index = () => {
             email: "cliente@example.com",
             document: "12345678909",
             amount: amountInCents,
+            type,
           }),
         },
       );
@@ -76,7 +105,10 @@ const Index = () => {
 
       setPixQrBase64(data.pix.imageBase64 || null);
       setPixCode(data.pix.code || null);
-      trackEvent("click_plan_pix");
+      if (data.orderId) {
+        setCurrentOrderId(data.orderId);
+      }
+      trackEvent(type === "whatsapp" ? "click_whatsapp_pix" : "click_plan_pix");
     } catch (error) {
       console.error("Erro inesperado ao criar pagamento PIX:", error);
       setPixError("Erro inesperado ao gerar o pagamento PIX.");
@@ -197,7 +229,7 @@ const Index = () => {
                     key={plan.label}
                     variant="cta"
                     className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-primary/40 md:text-lg"
-                    onClick={() => handlePixCheckout(2990)}
+                    onClick={() => handlePixCheckout(2990, "subscription")}
                   >
                     <span>{plan.label}</span>
                     <span className="flex items-center gap-2 text-sm font-semibold">{plan.price}</span>
@@ -208,7 +240,7 @@ const Index = () => {
                   variant="whatsapp"
                   className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-emerald-500/40 md:text-lg"
                   onClick={async () => {
-                    await handlePixCheckout(15000);
+                    await handlePixCheckout(15000, "whatsapp");
                     trackEvent("click_whatsapp");
                     window.open("https://wa.me/", "_blank", "noopener,noreferrer");
                   }}
@@ -335,6 +367,42 @@ const Index = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showWhatsappAccessModal} onOpenChange={setShowWhatsappAccessModal}>
+        <DialogContent className="max-w-sm animate-enter rounded-3xl border border-border bg-background/95 px-6 py-5 shadow-xl shadow-emerald-500/30">
+          <DialogHeader className="space-y-2 text-center">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-emerald-400">
+              pagamento aprovado
+            </p>
+            <DialogTitle className="text-lg font-semibold tracking-tight">
+              Acesso liberado ao grupo VIP
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              Seu pagamento de R$ 150,00 foi confirmado. Clique no botão abaixo para entrar agora no grupo
+              exclusivo do WhatsApp.
+            </p>
+          </DialogHeader>
+
+          <div className="mt-4 flex flex-col gap-3">
+            <Button
+              variant="whatsapp"
+              className="w-full justify-center rounded-2xl px-5 py-3 text-sm font-semibold shadow-lg shadow-emerald-500/40"
+              asChild
+            >
+              <a
+                href="https://chat.whatsapp.com/LgkcC3dkAt908VyoilclWv"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Entrar no grupo do WhatsApp
+              </a>
+            </Button>
+            <p className="text-[0.7rem] text-muted-foreground text-center">
+              Guarde este link em um lugar seguro. Ele é o seu acesso direto ao grupo exclusivo.
+            </p>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
