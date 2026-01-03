@@ -267,53 +267,77 @@ const Index = () => {
       </section>
 
       <Dialog open={pixModalOpen} onOpenChange={setPixModalOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Pagamento PIX TriboPay</DialogTitle>
+        <DialogContent className="max-w-sm animate-enter rounded-3xl border border-border bg-background/95 px-6 py-5 shadow-xl shadow-primary/30">
+          <DialogHeader className="space-y-2 text-center">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-primary">
+              pagamento seguro
+            </p>
+            <DialogTitle className="text-lg font-semibold tracking-tight">
+              Pague sua assinatura com PIX
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">
+              Escaneie o QR Code ou use o código copia e cola para concluir o pagamento em poucos segundos.
+            </p>
           </DialogHeader>
 
           {isLoadingPix && (
-            <p className="text-sm text-muted-foreground">Gerando seu PIX, aguarde alguns segundos…</p>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Gerando seu PIX, aguarde alguns segundos…
+            </p>
           )}
 
           {!isLoadingPix && pixError && (
-            <p className="text-sm text-destructive">{pixError}</p>
+            <p className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-center text-sm text-destructive">
+              {pixError}
+            </p>
           )}
 
           {!isLoadingPix && !pixError && (
-            <div className="space-y-3">
+            <div className="mt-4 space-y-4">
               {pixQrBase64 && (
                 <div className="flex justify-center">
-                  <img
-                    src={`data:image/png;base64,${pixQrBase64}`}
-                    alt="QR Code PIX para pagamento"
-                    className="h-48 w-48 rounded-lg border border-border object-contain"
-                  />
+                  <div className="rounded-2xl border border-border bg-card p-3 shadow-lg shadow-primary/20">
+                    <img
+                      src={`data:image/png;base64,${pixQrBase64}`}
+                      alt="QR Code PIX para pagamento"
+                      className="h-48 w-48 rounded-xl object-contain"
+                    />
+                  </div>
                 </div>
               )}
 
               {pixCode && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    copia e cola
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    código copia e cola
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 rounded-2xl border border-border bg-muted/40 p-2">
                     <textarea
-                      className="flex-1 resize-none rounded-md border border-border bg-background p-2 text-xs text-foreground"
-                      rows={3}
+                      className="max-h-24 min-h-[72px] w-full resize-none rounded-xl border border-border/60 bg-background px-3 py-2 text-xs text-foreground"
                       readOnly
                       value={pixCode}
                     />
-                    <Button size="sm" variant="outline" onClick={handleCopyPixCode}>
-                      Copiar
+                    <Button
+                      size="sm"
+                      variant="cta"
+                      className="self-stretch hover-scale text-sm font-semibold"
+                      onClick={handleCopyPixCode}
+                    >
+                      Copiar código PIX
                     </Button>
                   </div>
                 </div>
               )}
 
-              <p className="text-xs text-muted-foreground">
-                Status: <span className="font-semibold">Aguardando pagamento</span>
-              </p>
+              <div className="mt-1 flex items-center justify-between text-[0.7rem] text-muted-foreground">
+                <span>
+                  Status: <span className="font-semibold text-primary">Aguardando pagamento</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Lock className="h-3 w-3" aria-hidden="true" />
+                  <span>Ambiente protegido</span>
+                </span>
+              </div>
             </div>
           )}
         </DialogContent>
