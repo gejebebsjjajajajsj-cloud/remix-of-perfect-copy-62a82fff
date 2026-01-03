@@ -142,45 +142,19 @@ const Index = () => {
                       key={plan.label}
                       variant="cta"
                       className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-primary/40 md:text-lg"
-                      onClick={async () => {
-                        trackEvent("click_plan");
-                        try {
-                          const response = await fetch(
-                            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-pix`,
-                            {
-                              method: "POST",
-                              headers: {
-                                "Content-Type": "application/json",
-                              },
-                              body: JSON.stringify({
-                                amount: 2990,
-                                description: "Assinatura 30 dias - Bolzani",
-                                type: "assinatura",
-                              }),
-                            },
-                          );
-
-                          const data = await response.json();
-
-                          if (!response.ok || !data.pix_code) {
-                            alert("Não foi possível gerar o pagamento PIX. Tente novamente em alguns minutos.");
-                            return;
-                          }
-
-                          alert(
-                            "Pagamento PIX gerado com sucesso!\n\nCopie e cole o código PIX no seu banco:\n\n" +
-                              data.pix_code,
-                          );
-                        } catch (error) {
-                          console.error("Erro ao gerar pagamento PIX", error);
-                          alert("Erro inesperado ao gerar o pagamento PIX.");
-                        }
-                      }}
+                      asChild
                     >
-                      <span>{plan.label}</span>
-                      <span className="flex items-center gap-2 text-sm font-semibold">
-                        {plan.price}
-                      </span>
+                      <a
+                        href={plan.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackEvent("click_plan")}
+                      >
+                        <span>{plan.label}</span>
+                        <span className="flex items-center gap-2 text-sm font-semibold">
+                          {plan.price}
+                        </span>
+                      </a>
                     </Button>
                   ))}
 

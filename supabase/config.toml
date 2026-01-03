@@ -1,7 +1,1 @@
 project_id = "hypnuvrhfcqzpmgedpqt"
-
-[functions.sync-pix]
-verify_jwt = false
-
-[functions.sync-webhook]
-verify_jwt = false
