@@ -57,7 +57,12 @@ const Index = () => {
           const newStatus = (payload.new as any).status;
           if (newStatus === "paid") {
             if (currentOrderType === "whatsapp") {
-              setShowWhatsappAccessModal(true);
+              // Redireciona para o grupo VIP de R$150 após pagamento aprovado
+              window.open(
+                "https://chat.whatsapp.com/LgkcC3dkAt908VyoilclWv",
+                "_blank",
+                "noopener,noreferrer",
+              );
             } else if (currentOrderType === "subscription") {
               // Redireciona para o grupo de assinantes após pagamento aprovado
               window.open(
