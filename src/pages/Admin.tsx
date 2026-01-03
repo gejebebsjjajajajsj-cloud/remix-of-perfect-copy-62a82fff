@@ -17,6 +17,7 @@ const Admin = () => {
     clicksPlan: 0,
     clicksWhatsApp: 0,
     payments: 0,
+    revenue: 540,
   });
 
   const handleLogin = (e: React.FormEvent) => {
@@ -50,7 +51,8 @@ const Admin = () => {
         visits,
         clicksPlan,
         clicksWhatsApp,
-        payments: 0, // Will be updated when you integrate PIX API
+        payments: 0, // Will be updated quando você integrar a API de pagamentos real
+        revenue: 540, // Dado fake para mostrar faturamento
       });
     };
 
@@ -163,9 +165,11 @@ const Admin = () => {
                 <DollarSign className="h-5 w-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Conversões</p>
-                <p className="text-2xl font-bold">{stats.payments}</p>
-                <p className="text-xs text-muted-foreground">Indicador manual de resultados</p>
+                <p className="text-sm text-muted-foreground">Faturamento (fake)</p>
+                <p className="text-2xl font-bold">
+                  R$ {stats.revenue.toFixed(2).replace(".", ",")}
+                </p>
+                <p className="text-xs text-muted-foreground">Simulação de lucro total em vendas</p>
               </div>
             </div>
           </Card>
