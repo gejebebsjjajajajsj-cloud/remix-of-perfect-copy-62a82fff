@@ -134,16 +134,28 @@ serve(async (req) => {
       }),
     });
 
-    if (!cashInResponse.ok) {
-      const text = await cashInResponse.text();
-      console.error("Error creating SyncPayments cash-in", cashInResponse.status, text);
-      return new Response(JSON.stringify({ error: "Falha ao criar pagamento PIX" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const rawText = await cashInResponse.text();
+    let cashInData: any = null;
+    try {
+      cashInData = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      cashInData = rawText;
     }
 
-    const cashInData = await cashInResponse.json();
+    if (!cashInResponse.ok) {
+      console.error("Error creating SyncPayments cash-in", cashInResponse.status, cashInData);
+      return new Response(
+        JSON.stringify({
+          error: "Falha ao criar pagamento PIX",
+          provider_status: cashInResponse.status,
+          provider_response: cashInData,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const { data, error } = await supabase.from("payments").insert({
       identifier: cashInData.identifier,
