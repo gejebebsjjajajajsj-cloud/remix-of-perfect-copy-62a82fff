@@ -114,10 +114,13 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Dashboard Admin</h1>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard Admin</h1>
+            <p className="text-sm text-muted-foreground">Visão geral de desempenho da página</p>
+          </div>
           <Button variant="outline" onClick={() => setAuthenticated(false)}>
             Sair
           </Button>
@@ -166,11 +169,11 @@ const Admin = () => {
                 <DollarSign className="h-5 w-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Faturamento (fake)</p>
+                <p className="text-sm text-muted-foreground">Faturamento total</p>
                 <p className="text-2xl font-bold">
                   R$ {stats.revenue.toFixed(2).replace(".", ",")}
                 </p>
-                <p className="text-xs text-muted-foreground">Simulação de lucro total em vendas</p>
+                <p className="text-xs text-muted-foreground">Baseado nas vendas registradas</p>
               </div>
             </div>
           </Card>
