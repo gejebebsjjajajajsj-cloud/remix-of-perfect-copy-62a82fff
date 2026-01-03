@@ -41,7 +41,7 @@ const Index = () => {
     supabase.from("analytics_events").insert({ event_type: eventType });
   };
 
-  const handlePixCheckout = async () => {
+  const handlePixCheckout = async (amountInCents: number) => {
     try {
       setPixError(null);
       setIsLoadingPix(true);
@@ -59,7 +59,7 @@ const Index = () => {
             name: "Cliente Bolzani",
             email: "cliente@example.com",
             document: "12345678909",
-            amount: 2990, // 29,90 em centavos
+            amount: amountInCents,
           }),
         },
       );
@@ -84,7 +84,6 @@ const Index = () => {
       setIsLoadingPix(false);
     }
   };
-
   const handleCopyPixCode = async () => {
     if (!pixCode) return;
     try {
@@ -198,7 +197,7 @@ const Index = () => {
                     key={plan.label}
                     variant="cta"
                     className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-primary/40 md:text-lg"
-                    onClick={handlePixCheckout}
+                    onClick={() => handlePixCheckout(2990)}
                   >
                     <span>{plan.label}</span>
                     <span className="flex items-center gap-2 text-sm font-semibold">{plan.price}</span>
@@ -208,18 +207,14 @@ const Index = () => {
                 <Button
                   variant="whatsapp"
                   className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-base font-semibold shadow-lg shadow-emerald-500/40 md:text-lg"
-                  asChild
+                  onClick={async () => {
+                    await handlePixCheckout(15000);
+                    trackEvent("click_whatsapp");
+                    window.open("https://wa.me/", "_blank", "noopener,noreferrer");
+                  }}
                 >
-                  <a
-                    href="https://wa.me/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Chamar no WhatsApp"
-                    onClick={() => trackEvent("click_whatsapp")}
-                  >
-                    <span>Chamar no WhatsApp</span>
-                    <span className="flex items-center gap-2 text-sm font-semibold">R$ 150,00</span>
-                  </a>
+                  <span>Chamar no WhatsApp</span>
+                  <span className="flex items-center gap-2 text-sm font-semibold">R$ 150,00</span>
                 </Button>
               </div>
 
