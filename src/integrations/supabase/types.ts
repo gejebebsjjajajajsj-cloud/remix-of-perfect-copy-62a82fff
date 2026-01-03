@@ -32,6 +32,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          client_cpf: string | null
+          client_email: string | null
+          client_name: string | null
+          created_at: string
+          id: string
+          identifier: string
+          method: string
+          paid_at: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          client_cpf?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          identifier: string
+          method?: string
+          paid_at?: string | null
+          status: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          client_cpf?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          identifier?: string
+          method?: string
+          paid_at?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
