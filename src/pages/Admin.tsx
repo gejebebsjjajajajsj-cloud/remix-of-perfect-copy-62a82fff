@@ -40,17 +40,18 @@ const Admin = () => {
 
       if (error) {
         console.error("Error fetching stats:", error);
-        return;
       }
 
-      const visits = data?.filter((e) => e.event_type === "visit").length || 0;
-      const clicksPlan = data?.filter((e) => e.event_type === "click_plan").length || 0;
-      const clicksWhatsApp = data?.filter((e) => e.event_type === "click_whatsapp").length || 0;
+      // Dados fake para combinar com o faturamento de R$ 540,00
+      // Você pode ajustar esses números depois se quiser.
+      const fakeVisits = 120;
+      const fakeClicksPlan = 36; // por exemplo, 36 cliques gerando R$ 540,00
+      const fakeClicksWhatsApp = 12;
 
       setStats({
-        visits,
-        clicksPlan,
-        clicksWhatsApp,
+        visits: fakeVisits,
+        clicksPlan: fakeClicksPlan,
+        clicksWhatsApp: fakeClicksWhatsApp,
         payments: 0, // Will be updated quando você integrar a API de pagamentos real
         revenue: 540, // Dado fake para mostrar faturamento
       });
