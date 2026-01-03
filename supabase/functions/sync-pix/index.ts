@@ -92,10 +92,29 @@ serve(async (req) => {
       name: "Cliente",
       cpf: "12345678900",
       email: "cliente@example.com",
-      phone: "5511999999999",
+      phone: "11999999999", // 11 dígitos, sem DDI, para passar na validação da Sync
     };
 
     const webhookUrl = body.webhook_url ?? `${supabaseUrl}/functions/v1/sync-webhook`;
+
+    // Normaliza e valida telefone (API exige 10-11 dígitos numéricos)
+    const phoneRaw = String(client.phone ?? "");
+    const phoneDigits = phoneRaw.replace(/\D/g, "");
+
+    if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      console.error("Telefone inválido para SyncPayments", phoneRaw);
+      return new Response(
+        JSON.stringify({
+          error: "Telefone inválido. Use DDD + número, apenas dígitos (10 ou 11 dígitos).",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    client.phone = phoneDigits as string;
 
     const accessToken = await getAccessToken();
     await validateCompany(accessToken);
